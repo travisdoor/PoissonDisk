@@ -1,0 +1,64 @@
+//************************************************************************************************
+// pdisk-generator
+//
+// File:   vec2_arr.bl 
+// Author: Martin Dorazil
+// Date:   3/18/19
+//
+// Copyright 2019 Craneballs LLC
+//************************************************************************************************
+
+Vec2Arr :: struct {
+  data: []Vec2,
+  capacity: usize,
+};
+
+vec2_arr_init :: fn (self: *Vec2Arr, capacity: usize) {
+  self.data.len = 0;
+  self.data.ptr = null;
+  self.capacity = 0;
+  vec2_arr_reserve(self, capacity);
+};
+
+vec2_arr_terminate :: fn (self: *Vec2Arr) {
+  free(cast(*u8) self.data.ptr);
+  self.data.ptr = null;
+  self.data.len = 0;
+  self.capacity = 0;
+};
+
+vec2_arr_push_back :: fn (self: *Vec2Arr, v: *Vec2) *Vec2 {
+  // double if needed
+  if self.data.len >= self.capacity {
+    vec2_arr_reserve(self, self.capacity * 2);
+  }
+
+  prev_len :: self.data.len;
+  self.data.len += 1;
+  self.data[prev_len] = ^v;
+
+  return &self.data[prev_len];
+};
+
+vec2_arr_reserve :: fn (self: *Vec2Arr, capacity: usize) {
+  if capacity == 0 || capacity <= self.capacity {
+    return;
+  }
+
+  self.data.ptr = cast(*Vec2) realloc(cast(*u8) self.data.ptr, capacity * sizeof(Vec2));
+
+  if self.data.ptr == null {
+    abort();
+  }
+
+  self.capacity = capacity;
+};
+
+vec2_arr_remove :: fn (self: *Vec2Arr, i: usize) {
+  if self.data.len == 1 || i == self.data.len - 1 {
+    self.data.len -= 1;
+  } else {
+    self.data[i] = self.data[self.data.len - 1];
+    self.data.len -= 1;
+  }
+};
